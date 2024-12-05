@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault - MyPass</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>MyPass Vault</h1>
+
+    <div class="flash {{ 'success' if get_flashed_messages(with_categories=true) and 'success' in get_flashed_messages(with_categories=true)[0] else '' }}">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="vault-container">
+        <form method="POST" action="{{ url_for('vault') }}">
+            <h2>Add New Item</h2>
+            <label for="item_type">Item Type:</label>
+            <select name="item_type" id="item_type" required>
+                <option value="Login">Login</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Identity">Identity</option>
+                <option value="Secure Notes">Secure Notes</option>
+            </select><br>
+
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username"><br>
+
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password"><br>
+
+            <label for="url">URL:</label>
+            <input type="text" name="url" id="url"><br>
+
+            <label for="credit_card_number">Credit Card Number:</label>
+            <input type="text" name="credit_card_number" id="credit_card_number"><br>
+
+            <label for="cvv">CVV:</label>
+            <input type="text" name="cvv" id="cvv"><br>
+
+            <button type="submit">Add Item</button>
+        </form>
+
+        <h2>Your Saved Vault Items</h2>
+        <div class="vault-items">
+            {% for item in items %}
+                <div class="vault-item">
+                    <h3>{{ item.item_type }}</h3>
+                    <div>
+                        <strong>Username:</strong>
+                        <span id="username-{{ loop.index }}" class="masked-data">
+                            {{ item.data.username if item.data.username else 'N/A' }}
+                        </span><br>
+
+                        <strong>Password:</strong>
+                        <span id="password-{{ loop.index }}" class="masked-data">
+                            {{ item.data.password if item.data.password else 'N/A' }}
+                        </span><br>
+
+                        <strong>URL:</strong> {{ item.data.url if item.data.url else 'N/A' }}<br>
+
+                        <strong>Credit Card Number:</strong>
+                        <span id="credit_card_number-{{ loop.index }}" class="masked-data">
+                            {{ item.data.credit_card_number if item.data.credit_card_number else 'N/A' }}
+                        </span><br>
+
+                        <strong>CVV:</strong>
+                        <span id="cvv-{{ loop.index }}" class="masked-data">
+                            {{ item.data.cvv if item.data.cvv else 'N/A' }}
+                        </span><br>
+
+                        <!-- Unmask Button -->
+                        <button class="unmask-btn" data-id="username-{{ loop.index }}">Unmask</button>
+                        <button class="unmask-btn" data-id="password-{{ loop.index }}">Unmask</button>
+                        <button class="unmask-btn" data-id="credit_card_number-{{ loop.index }}">Unmask</button>
+                        <button class="unmask-btn" data-id="cvv-{{ loop.index }}">Unmask</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="logout-btn">
+        <a href="{{ url_for('logout') }}"><button>Logout</button></a>
+    </div>
+
+    <script>
+        // Unmask data when the "Unmask" button is clicked
+        document.querySelectorAll('.unmask-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const dataId = this.getAttribute('data-id');
+                const element = document.getElementById(dataId);
+                
+                if (element.style.display === 'none') {
+                    element.style.display = 'inline';  // Show the clear data
+                    this.textContent = 'Mask';  // Change button text to "Mask"
+                } else {
+                    element.style.display = 'none';  // Hide the data
+                    this.textContent = 'Unmask';  // Change button text to "Unmask"
+                }
+            });
+        });
+    </script>
+</body>
+</html>

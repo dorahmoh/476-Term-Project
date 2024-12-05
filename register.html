@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - MyPass</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
+        .password-strength-message {
+            color: red;
+            font-size: 12px;
+        }
+        .generate-password-btn {
+            position: absolute;
+            top: 50%;
+            right: 70px; /* Position the button slightly to the left of the toggle icon */
+            transform: translateY(-50%);
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
+            <h3 class="text-center mb-4">Create an Account</h3>
+            <form id="register-form" method="POST" action="{{ url_for('register') }}">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3 password-container">
+                    <label for="master_password" class="form-label">Password</label>
+                    <input type="password" name="master_password" id="master_password" class="form-control" placeholder="Enter your password" required>
+                    <button type="button" class="generate-password-btn" id="generate-password-btn">Generate</button>
+                    <i class="toggle-password bi bi-eye" id="toggle-master-password"></i>
+                    <p id="password-strength-message" class="password-strength-message"></p>
+                </div>
+                <div class="mb-3 password-container">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm your password" required>
+                    <i class="toggle-password bi bi-eye" id="toggle-confirm-password"></i>
+                </div>
+                <div class="mb-3">
+                    <label for="security_question_1" class="form-label">Security Question 1</label>
+                    <input type="text" name="security_question_1" id="security_question_1" class="form-control" placeholder="Your favorite book?" required>
+                </div>
+                <div class="mb-3">
+                    <label for="security_question_2" class="form-label">Security Question 2</label>
+                    <input type="text" name="security_question_2" id="security_question_2" class="form-control" placeholder="Your first pet's name?" required>
+                </div>
+                <div class="mb-3">
+                    <label for="security_question_3" class="form-label">Security Question 3</label>
+                    <input type="text" name="security_question_3" id="security_question_3" class="form-control" placeholder="Your mother's maiden name?" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+            <p class="text-center mt-3">Already have an account? <a href="{{ url_for('login') }}">Log in here</a>.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Toggle password visibility
+        function togglePasswordVisibility(passwordInputId, toggleIconId) {
+            const passwordInput = document.getElementById(passwordInputId);
+            const toggleIcon = document.getElementById(toggleIconId);
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        }
+
+        // Attach event listeners for password toggling
+        document.getElementById('toggle-master-password').addEventListener('click', () => {
+            togglePasswordVisibility('master_password', 'toggle-master-password');
+        });
+
+        document.getElementById('toggle-confirm-password').addEventListener('click', () => {
+            togglePasswordVisibility('confirm_password', 'toggle-confirm-password');
+        });
+
+        // Function to check password strength
+        function isStrongPassword(password) {
+            const regex = {
+                length: /.{8,}/, // Minimum 8 characters
+                lowerCase: /[a-z]/,
+                upperCase: /[A-Z]/,
+                digit: /\d/,
+                specialChar: /[!@#$%^&*(),.?":{}|<>]/
+            };
+            return regex.length.test(password) && regex.lowerCase.test(password) && 
+                   regex.upperCase.test(password) && regex.digit.test(password) && 
+                   regex.specialChar.test(password);
+        }
+
+        // Handle form submission
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            const password = document.getElementById('master_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const passwordStrengthMessage = document.getElementById('password-strength-message');
+            
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                passwordStrengthMessage.textContent = "Passwords do not match.";
+                event.preventDefault();
+                return;
+            }
+
+            // Check if password is strong
+            if (!isStrongPassword(password)) {
+                passwordStrengthMessage.textContent = "Weak password. Ensure it includes at least one uppercase letter, one lowercase letter, one number, and one special character.";
+                event.preventDefault();
+                return;
+            }
+
+            // Clear any previous error messages if validation passes
+            passwordStrengthMessage.textContent = "";
+        });
+
+        // Generate a random password
+        function generateRandomPassword(length = 12) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return password;
+        }
+
+        // Attach event listener to generate password button
+        document.getElementById('generate-password-btn').addEventListener('click', function() {
+            const generatedPassword = generateRandomPassword();
+            document.getElementById('master_password').value = generatedPassword;
+            document.getElementById('confirm_password').value = generatedPassword; // Automatically confirm the password too
+            document.getElementById('password-strength-message').textContent = ""; // Clear any previous messages
+        });
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</body>
+</html>
+// Handle form submission
+document.getElementById('register-form').addEventListener('submit', function(event) {
+    const password = document.getElementById('master_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const passwordStrengthMessage = document.getElementById('password-strength-message');
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        passwordStrengthMessage.textContent = "Passwords do not match.";
+        event.preventDefault();
+        return;
+    }
+
+    // Check if password is strong
+    if (!isStrongPassword(password)) {
+        passwordStrengthMessage.textContent = "Weak password. Ensure it includes at least one uppercase letter, one lowercase letter, one number, and one special character.";
+        event.preventDefault();
+        return;
+    }
+
+    // Clear any previous error messages if validation passes
+    passwordStrengthMessage.textContent = "";
+
+    // If form passes validation, redirect to the vault
+    window.location.href = '/vault';  // Redirect to vault route
+});
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+            {% for category, message in messages %}
+                <li class="flash {{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
